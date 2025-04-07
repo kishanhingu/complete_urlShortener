@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style_1.css" />
+    <title>URL Shortener</title>
+  </head>
+  <body>
+    <!-- Header -->
+    <%- include("./partials/header.ejs") %> <% if(user) {%>
+    <h2>You are logged In</h2>
+    <% } else { %>
+    <h2>You are not logged In</h2>
+    <% } %>
+
+    <div class="container index-form">
+      <h1>URL Shortener</h1>
+
+      <form action="/" method="post">
+        <div>
+          <label for="url">Enter URL:</label>
+          <input type="url" name="url" id="url" required />
+        </div>
+        <div>
+          <label for="shortCode">Enter ShortCode:</label>
+          <input type="text" name="shortCode" id="shortCode" />
+        </div>
+        <button type="submit">Shorten</button>
+      </form>
+
+      <h2>Shortened URLs</h2>
+      <ul>
+        <!-- {{ shortened_urls }} -->
+
+        <!-- Object.entries(links) .map( ([shortCode, url]) => `
+        <li>
+          <a href="${shortCode}" target="_blank">${host}/${shortCode}</a> ->
+          ${url}
+        </li>
+        ` ) .join("") -->
+
+        <% links.map(({shortCode, url}) => { %>
+        <li>
+          <a href="/<%= shortCode %>" target="_blank">
+            <%= host %>/<%= shortCode %>
+          </a>
+          -> <%= url %>
+        </li>
+
+        <% }) %>
+      </ul>
+    </div>
+
+    <%- include("./partials/footer.ejs") %>
+  </body>
+</html>

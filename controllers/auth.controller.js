@@ -9,10 +9,13 @@ import {
 
 // REGISTER PAGE
 export const getRegisterPage = (req, res) => {
+  if (req.user) return res.redirect("/");
   return res.render("auth/register");
 };
 
 export const postRegister = async (req, res) => {
+  if (req.user) return res.redirect("/");
+
   const { name, email, password, signup } = req.body;
 
   const userExists = await getUserByEmail(email);
@@ -32,10 +35,14 @@ export const postRegister = async (req, res) => {
 
 // LOGIN PAGE
 export const getLoginPage = (req, res) => {
+  if (req.user) return res.redirect("/");
+
   return res.render("auth/login");
 };
 
 export const postLogin = async (req, res) => {
+  if (req.user) return res.redirect("/");
+
   const { email, password } = req.body;
 
   const user = await getUserByEmail(email);
@@ -59,7 +66,7 @@ export const postLogin = async (req, res) => {
     // res.setHeader("Set-Cookie", "isLoggedIn=true; path=/;");
     // res.cookie("isLoggedIn", true);
     res.cookie("access_token", token);
-    res.redirect("/");
+    return res.redirect("/");
   }
 };
 
@@ -67,4 +74,10 @@ export const postLogin = async (req, res) => {
 export const getMe = (req, res) => {
   if (!req.user) return res.send(`<h1>You are not logged in 😛😛😛😛😛😛</h1>`);
   return res.send(`<h1>Hello ➡️ ${req.user.name} ➡️➡️ ${req.user.email}</h1>`);
+};
+
+// User Logout
+export const userLogout = (req, res) => {
+  res.clearCookie("access_token");
+  res.redirect("/");
 };

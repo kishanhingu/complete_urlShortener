@@ -40,7 +40,7 @@ export const getShortenerPage = async (req, res) => {
 
     if (!req.user)
       return res.send(
-        `<h1>You are not logged in 😛😛😛😛😛😛</h1><button><a href="/login">Go login</a></button>`
+        `<h1>You are not logged in 😛😛😛😛😛😛</h1><a href="/login"><button>Go Login</button></a>`
       );
 
     return res.render("index", { links, host: req.host });

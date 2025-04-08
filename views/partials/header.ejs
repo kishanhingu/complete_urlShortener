@@ -22,8 +22,12 @@
           <a href="/">Home</a>
           <a href="#section2">About</a>
           <a href="#section4">Contact</a>
+          <% if(!user) {%>
           <a href="/login">Login</a>
           <a href="/register">Register</a>
+          <% } else { %>
+          <a href="/logout">Logout</a>
+          <% }%>
         </nav>
       </div>
     </header>

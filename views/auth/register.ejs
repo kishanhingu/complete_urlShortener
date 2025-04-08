@@ -62,6 +62,12 @@
                   />
                 </div>
 
+                <!-- flash error message -->
+                <% if(errors && errors.length > 0) { %> <%
+                errors.forEach((error) => { %>
+                <p class="flash-error"><%= error %></p>
+                <% }); %> <% } %>
+
                 <div class="form-group form-button">
                   <input
                     type="submit"

@@ -10,7 +10,7 @@ import {
 // REGISTER PAGE
 export const getRegisterPage = (req, res) => {
   if (req.user) return res.redirect("/");
-  return res.render("auth/register");
+  return res.render("auth/register", { errors: req.flash("errors") });
 };
 
 export const postRegister = async (req, res) => {
@@ -21,6 +21,7 @@ export const postRegister = async (req, res) => {
   const userExists = await getUserByEmail(email);
 
   if (userExists) {
+    req.flash("errors", "User already exists");
     return res.redirect("/register");
   } else {
     // using bcrypt
@@ -37,7 +38,7 @@ export const postRegister = async (req, res) => {
 export const getLoginPage = (req, res) => {
   if (req.user) return res.redirect("/");
 
-  return res.render("auth/login");
+  return res.render("auth/login", { errors: req.flash("errors") });
 };
 
 export const postLogin = async (req, res) => {
@@ -53,9 +54,11 @@ export const postLogin = async (req, res) => {
   // Using argon2
   const isPasswordVerify = await verifyPassword(user.password, password);
   if (!user) {
+    req.flash("errors", "Invalid email or password");
     return res.redirect("/login");
     // } else if (user.password !== password) {
   } else if (!isPasswordVerify) {
+    req.flash("errors", "Invalid email or password");
     return res.redirect("/login");
   } else {
     const token = generateToken({

@@ -5,6 +5,8 @@ import { authRoutes } from "./routes/auth.routes.js";
 import cookieParser from "cookie-parser";
 // import { connectDB } from "./config/db-client.js";
 import { verifyAuthentication } from "./middlewares/verify-auth-middleware.js";
+import session from "express-session";
+import flash from "connect-flash";
 const app = express();
 
 const PORT = env.PORT || 3000;
@@ -18,6 +20,12 @@ app.set("view engine", "ejs");
 
 // Cookie-parser
 app.use(cookieParser());
+
+// error message show karva mate
+app.use(
+  session({ secret: "auth_secret", resave: true, saveUninitialized: false })
+);
+app.use(flash());
 
 // verify middleware
 app.use(verifyAuthentication);

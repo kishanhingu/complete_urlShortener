@@ -38,10 +38,10 @@ export const getShortenerPage = async (req, res) => {
     // console.log("🥸 IsLoggedIn:-", access_token);
     // return res.render("index", { links, host: req.host, access_token });
 
-    if (!req.user)
-      return res.send(
-        `<h1>You are not logged in 😛😛😛😛😛😛</h1><a href="/login"><button>Go Login</button></a>`
-      );
+    // if (!req.user)
+    //   return res.send(
+    //     `<h1>You are not logged in 😛😛😛😛😛😛</h1><a href="/login"><button>Go Login</button></a>`
+    //   );
 
     return res.render("index", { links, host: req.host });
   } catch (error) {

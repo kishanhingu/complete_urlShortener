@@ -34,5 +34,3 @@ console.log("1 - 1", await verifyPassword(password1, hashedPassword1));
 console.log("2 - 1", await verifyPassword(password2, hashedPassword1));
 console.log("2 - 2", await verifyPassword(password2, hashedPassword2));
 console.log("1 - 2", await verifyPassword(password1, hashedPassword2));
-
-// Hello Kishan

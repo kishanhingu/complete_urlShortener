@@ -30,7 +30,7 @@ export const postRegister = async (req, res) => {
     const hashedPassword = await hashPassword(password);
     const user = await createUser({ name, email, hashedPassword });
 
-    if (user) return res.redirect("/");
+    if (user) return res.redirect("/login");
   }
 };
 
@@ -82,5 +82,5 @@ export const getMe = (req, res) => {
 // User Logout
 export const userLogout = (req, res) => {
   res.clearCookie("access_token");
-  res.redirect("/");
+  res.redirect("/login");
 };

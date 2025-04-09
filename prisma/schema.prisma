@@ -19,13 +19,16 @@ model url_shortener {
   shortCode String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  userId    Int // Foreign key field
+  user      users    @relation(fields: [userId], references: [id]) // Relation to users table
 }
 
 model users {
-  id        Int      @id @default(autoincrement())
-  name      String?
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            Int             @id @default(autoincrement())
+  name          String?
+  email         String          @unique
+  password      String
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  url_shortener url_shortener[]
 }

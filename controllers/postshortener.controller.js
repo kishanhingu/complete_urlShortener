@@ -27,7 +27,10 @@ export const getShortenerPage = async (req, res) => {
     // const links = await getData();
 
     //! Prisma Using MySQL
-    const links = await getData();
+
+    if (!req.user) return res.redirect("/login");
+
+    const links = await getData(req.user.id);
 
     // let isLoggedIn = req.headers.cookie;
     // isLoggedIn = Boolean(
@@ -37,11 +40,6 @@ export const getShortenerPage = async (req, res) => {
     // let access_token = req.cookies.access_token;
     // console.log("🥸 IsLoggedIn:-", access_token);
     // return res.render("index", { links, host: req.host, access_token });
-
-    // if (!req.user)
-    //   return res.send(
-    //     `<h1>You are not logged in 😛😛😛😛😛😛</h1><a href="/login"><button>Go Login</button></a>`
-    //   );
 
     return res.render("index", { links, host: req.host });
   } catch (error) {
@@ -65,7 +63,7 @@ export const postURLShortener = async (req, res) => {
     // const existData = getLinks.some((data) => data.shortCode === shortCode);
 
     //! Prisma Using MySQL
-    const getLinks = await getData();
+    const getLinks = await getData(req.user.id);
     const existData = getLinks.some((data) => data.shortCode === shortCode);
 
     // if (getLinks[finalShortCode]) {
@@ -83,7 +81,7 @@ export const postURLShortener = async (req, res) => {
       //! With MySQL
       // await saveData({ url, shortCode });
       //! Prisma Using MySQL
-      await saveData({ url, shortCode });
+      await saveData({ url, shortCode, userId: req.user.id });
     }
 
     return res.redirect("/");

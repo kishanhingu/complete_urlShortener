@@ -1,16 +1,19 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-export const getData = async () => {
-  const allShortLinks = await prisma.url_shortener.findMany();
+export const getData = async (id) => {
+  const allShortLinks = await prisma.url_shortener.findMany({
+    where: { userId: id },
+  });
   return allShortLinks;
 };
 
-export const saveData = async ({ url, shortCode }) => {
+export const saveData = async ({ url, shortCode, userId }) => {
   await prisma.url_shortener.create({
     data: {
       url: url,
       shortCode: shortCode,
+      userId: userId,
     },
   });
 };

@@ -1,9 +1,10 @@
-import crypto from "crypto";
+// import crypto from "crypto";
 import {
   getData,
   getLinkByShortCode,
   saveData,
 } from "../services/shortener.service.js";
+import { shortenerSchema } from "../validators/shortener-validator.js";
 // import { URL } from "../schema/url_schema.js";
 
 //! With MONGODB & MySQL
@@ -41,7 +42,11 @@ export const getShortenerPage = async (req, res) => {
     // console.log("🥸 IsLoggedIn:-", access_token);
     // return res.render("index", { links, host: req.host, access_token });
 
-    return res.render("index", { links, host: req.host });
+    return res.render("index", {
+      links,
+      host: req.host,
+      errors: req.flash("errors"),
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal server error");
@@ -52,8 +57,16 @@ export const postURLShortener = async (req, res) => {
   if (!req.user) return res.redirect("/login");
 
   try {
-    const { url, shortCode } = req.body;
-    const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");
+    // const { url, shortCode } = req.body;
+    // const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");
+    const { data, error } = shortenerSchema.safeParse(req.body);
+
+    if (error) {
+      req.flash("errors", error.errors[0].message);
+      return res.redirect("/");
+    }
+
+    const { url, shortCode } = data;
 
     //! With MONGODB
     // const getLinks = await getData();
@@ -70,9 +83,7 @@ export const postURLShortener = async (req, res) => {
 
     // if (getLinks[finalShortCode]) {
     if (existData) {
-      return res
-        .status(400)
-        .send("Short Code already exists. Please choose another.");
+      req.flash("errors", "Short Code already exists. Please choose another.");
     } else {
       // getLinks[finalShortCode] = url;
       // await saveData(getLinks);

@@ -26,6 +26,13 @@
           <label for="shortCode">Enter ShortCode:</label>
           <input type="text" name="shortCode" id="shortCode" />
         </div>
+
+        <!-- flash error message -->
+        <% if(errors && errors.length > 0) { %> <% errors.forEach((error) => {
+        %>
+        <p class="flash-error"><%= error %></p>
+        <% }); %> <% } %>
+
         <button type="submit">Shorten</button>
       </form>
 

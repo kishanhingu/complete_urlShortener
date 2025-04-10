@@ -6,6 +6,10 @@ import {
   hashPassword,
   verifyPassword,
 } from "../services/authRegister.service.js";
+import {
+  loginUserSchema,
+  registerUserSchema,
+} from "../validators/auth-validator.js";
 
 // REGISTER PAGE
 export const getRegisterPage = (req, res) => {
@@ -16,7 +20,16 @@ export const getRegisterPage = (req, res) => {
 export const postRegister = async (req, res) => {
   if (req.user) return res.redirect("/");
 
-  const { name, email, password, signup } = req.body;
+  // const { name, email, password, signup } = req.body;
+
+  const { data, error } = registerUserSchema.safeParse(req.body);
+
+  if (error) {
+    req.flash("errors", error.errors[0].message);
+    return res.redirect("/register");
+  }
+
+  const { name, email, password } = data;
 
   const userExists = await getUserByEmail(email);
 
@@ -44,7 +57,16 @@ export const getLoginPage = (req, res) => {
 export const postLogin = async (req, res) => {
   if (req.user) return res.redirect("/");
 
-  const { email, password } = req.body;
+  // const { email, password } = req.body;
+
+  const { data, error } = loginUserSchema.safeParse(req.body);
+
+  if (error) {
+    req.flash("errors", error.errors[0].message);
+    return res.redirect("/login");
+  }
+
+  const { email, password } = data;
 
   const user = await getUserByEmail(email);
 

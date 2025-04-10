@@ -49,6 +49,8 @@ export const getShortenerPage = async (req, res) => {
 };
 
 export const postURLShortener = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
   try {
     const { url, shortCode } = req.body;
     const finalShortCode = shortCode || crypto.randomBytes(4).toString("hex");

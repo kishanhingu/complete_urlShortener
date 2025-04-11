@@ -24,3 +24,9 @@ export const getLinkByShortCode = async (shortCode) => {
   });
   return data;
 };
+
+// findShortLinkById
+export const findShortLinkById = async (id) => {
+  const data = await prisma.url_shortener.findUnique({ where: { id: id } });
+  return data;
+};

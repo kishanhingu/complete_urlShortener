@@ -1,11 +1,13 @@
 // import crypto from "crypto";
 import {
+  findShortLinkById,
   getData,
   getLinkByShortCode,
   saveData,
 } from "../services/shortener.service.js";
 import { shortenerSchema } from "../validators/shortener-validator.js";
 // import { URL } from "../schema/url_schema.js";
+import z from "zod";
 
 //! With MONGODB & MySQL
 // import {
@@ -134,6 +136,30 @@ export const redirectToShortLink = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
+    return res.status(500).send("Internal server error");
+  }
+};
+
+//????? getShortenerEditPage ?????//
+export const getShortenerEditPage = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+  // const id = req.params;
+  const { data: id, error } = z.coerce.number().int().safeParse(req.params.id);
+
+  if (error) return res.status(404).send("404 error occurred");
+
+  try {
+    const shortLink = await findShortLinkById(id);
+    if (!shortLink) return res.redirect("/");
+
+    res.render("edit-shortLink", {
+      id: shortLink.id,
+      url: shortLink.url,
+      shortCode: shortLink.shortCode,
+      errors: req.flash("errors"),
+    });
+  } catch (err) {
+    console.error(err);
     return res.status(500).send("Internal server error");
   }
 };

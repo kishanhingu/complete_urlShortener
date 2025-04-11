@@ -37,7 +37,7 @@
       </form>
 
       <h2>Shortened URLs</h2>
-      <ul>
+      <ul class="url-list">
         <!-- {{ shortened_urls }} -->
 
         <!-- Object.entries(links) .map( ([shortCode, url]) => `
@@ -47,12 +47,22 @@
         </li>
         ` ) .join("") -->
 
-        <% links.map(({shortCode, url}) => { %>
-        <li>
-          <a href="/<%= shortCode %>" target="_blank">
-            <%= host %>/<%= shortCode %>
-          </a>
-          -> <%= url %>
+        <% links.map(({shortCode, url, id}) => { %>
+        <li class="url-item">
+          <div class="url-info">
+            <a href="/<%= shortCode %>" target="_blank">
+              <%= host %>/<%= shortCode %>
+            </a>
+            -> <%= url %>
+          </div>
+
+          <div class="url-actions">
+            <button class="copy-btn edit-btn">
+              <a href="/edit/<%= id %>">
+                <i class="zmdi zmdi-edit"></i>
+              </a>
+            </button>
+          </div>
         </li>
 
         <% }) %>

@@ -1,5 +1,6 @@
 // import crypto from "crypto";
 import {
+  deleteShortCode,
   findShortLinkById,
   getData,
   getLinkByShortCode,
@@ -191,6 +192,33 @@ export const postShortenerEditPage = async (req, res) => {
       res.redirect(`/edit/${id}`);
     }
     console.log(err);
+    return res.status(500).send("Internal server error");
+  }
+};
+
+//????? deleteShortLink ?????//
+export const deleteShortLink = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  const { data: id, error } = z.coerce.number().int().safeParse(req.params.id);
+
+  if (error) {
+    req.flash("errors", "ShortLink is not delete");
+    res.redirect("/");
+  }
+
+  try {
+    const deletedShortCode = await deleteShortCode(id);
+    console.log("deletedShortCode", deletedShortCode);
+
+    if (!deleteShortLink) {
+      req.flash("errors", "ShortLink is not delete");
+      return res.redirect("/");
+    }
+
+    res.redirect("/");
+  } catch (error) {
+    console.log(error);
     return res.status(500).send("Internal server error");
   }
 };

@@ -38,3 +38,8 @@ export const updateShortCode = async ({ id, url, shortCode }) => {
     data: { url, shortCode },
   });
 };
+
+// deleteShortCode
+export const deleteShortCode = async (id) => {
+  return await prisma.url_shortener.delete({ where: { id: id } });
+};

@@ -30,3 +30,11 @@ export const findShortLinkById = async (id) => {
   const data = await prisma.url_shortener.findUnique({ where: { id: id } });
   return data;
 };
+
+// updateShortCode
+export const updateShortCode = async ({ id, url, shortCode }) => {
+  return await prisma.url_shortener.update({
+    where: { id },
+    data: { url, shortCode },
+  });
+};

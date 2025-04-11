@@ -4,6 +4,7 @@ import {
   getData,
   getLinkByShortCode,
   saveData,
+  updateShortCode,
 } from "../services/shortener.service.js";
 import { shortenerSchema } from "../validators/shortener-validator.js";
 // import { URL } from "../schema/url_schema.js";
@@ -160,6 +161,36 @@ export const getShortenerEditPage = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    return res.status(500).send("Internal server error");
+  }
+};
+
+//????? postShortenerEditPage ?????//
+
+export const postShortenerEditPage = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  const { data: id, error } = z.coerce.number().int().safeParse(req.params.id);
+  if (error) return res.status(404).send("404 error occurred");
+
+  const { data, error: err } = shortenerSchema.safeParse(req.body);
+  if (err) {
+    req.flash("errors", err.errors[0].message);
+    return res.redirect(`/edit/${id}`);
+  }
+  const { url, shortCode } = data;
+
+  try {
+    const newUpdatedShortCode = await updateShortCode({ id, url, shortCode });
+    if (!newUpdatedShortCode) return res.send("404");
+
+    res.redirect("/");
+  } catch (err) {
+    if (err.code === "P2002") {
+      req.flash("errors", "Shortcode already exists, please choose another");
+      res.redirect(`/edit/${id}`);
+    }
+    console.log(err);
     return res.status(500).send("Internal server error");
   }
 };

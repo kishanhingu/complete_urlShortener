@@ -17,10 +17,21 @@ model url_shortener {
   id        Int      @id @default(autoincrement())
   url       String
   shortCode String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
   userId    Int // Foreign key field
   user      users    @relation(fields: [userId], references: [id]) // Relation to users table
+}
+
+model sessions {
+  id        Int      @id @default(autoincrement())
+  userId    Int // Foreign key field
+  user      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  valid     Boolean  @default(true)
+  userAgent String   @map("user_agent")
+  ip        String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
 
 model users {
@@ -31,4 +42,5 @@ model users {
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
   url_shortener url_shortener[]
+  sessions      sessions[]
 }

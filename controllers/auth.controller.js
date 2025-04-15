@@ -1,7 +1,10 @@
 import {
+  createAccessToken,
+  createRefreshToken,
+  createSession,
   // comparePassword,
   createUser,
-  generateToken,
+  // generateToken,
   getUserByEmail,
   hashPassword,
   verifyPassword,
@@ -83,14 +86,42 @@ export const postLogin = async (req, res) => {
     req.flash("errors", "Invalid email or password");
     return res.redirect("/login");
   } else {
-    const token = generateToken({
+    // const token = generateToken({
+    //   id: user.id,
+    //   name: user.name,
+    //   email: user.email,
+    // });
+
+    //? sessions create
+    const session = await createSession(user.id, {
+      ip: req.clientIp,
+      userAgent: req.headers["user-agent"],
+    });
+
+    const accessToken = createAccessToken({
       id: user.id,
       name: user.name,
       email: user.email,
+      sessionId: session.id,
     });
+
+    const refreshToken = createRefreshToken(session.id);
+
+    const baseConfig = { httpOnly: true, secure: true };
+
+    res.cookie("access_token", accessToken, {
+      ...baseConfig,
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refresh_token", refreshToken, {
+      ...baseConfig,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     // res.setHeader("Set-Cookie", "isLoggedIn=true; path=/;");
     // res.cookie("isLoggedIn", true);
-    res.cookie("access_token", token);
+    // res.cookie("access_token", token);
     return res.redirect("/");
   }
 };

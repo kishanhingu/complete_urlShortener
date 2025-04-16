@@ -73,6 +73,7 @@ export const verifyJWTToken = (token) => {
   return jwt.verify(token, process.env.JWT_SECRET);
 };
 
+// middleware ma
 // findSessionById
 const findSessionById = async (sessionId) => {
   const session = await prisma.sessions.findUnique({

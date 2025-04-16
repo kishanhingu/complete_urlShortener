@@ -88,18 +88,17 @@ export const postURLShortener = async (req, res) => {
     // if (getLinks[finalShortCode]) {
     if (existData) {
       req.flash("errors", "Short Code already exists. Please choose another.");
-    } else {
-      // getLinks[finalShortCode] = url;
-      // await saveData(getLinks);
-      //! With MONGODB
-      // await saveData({ url, shortCode });
-      //! With MONGOOSE
-      // await URL.create({ url, shortCode });
-      //! With MySQL
-      // await saveData({ url, shortCode });
-      //! Prisma Using MySQL
-      await saveData({ url, shortCode, userId: req.user.id });
     }
+    // getLinks[finalShortCode] = url;
+    // await saveData(getLinks);
+    //! With MONGODB
+    // await saveData({ url, shortCode });
+    //! With MONGOOSE
+    // await URL.create({ url, shortCode });
+    //! With MySQL
+    // await saveData({ url, shortCode });
+    //! Prisma Using MySQL
+    await saveData({ url, shortCode, userId: req.user.id });
 
     return res.redirect("/");
   } catch (error) {
@@ -133,9 +132,9 @@ export const redirectToShortLink = async (req, res) => {
 
     if (!link) {
       return res.status(404).send("404 error occurred");
-    } else {
-      return res.redirect(link.url);
     }
+
+    return res.redirect(link.url);
   } catch (error) {
     console.error(error);
     return res.status(500).send("Internal server error");

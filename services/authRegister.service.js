@@ -115,3 +115,8 @@ export const refreshTokens = async (refreshToken) => {
     console.log(error);
   }
 };
+
+// clearUserSession
+export const clearUserSession = async (sessionId) => {
+  return prisma.sessions.delete({ where: { id: sessionId } });
+};

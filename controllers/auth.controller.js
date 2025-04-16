@@ -1,4 +1,5 @@
 import {
+  clearUserSession,
   createAccessToken,
   createRefreshToken,
   createSession,
@@ -133,7 +134,10 @@ export const getMe = (req, res) => {
 };
 
 // User Logout
-export const userLogout = (req, res) => {
+export const userLogout = async (req, res) => {
+  await clearUserSession(req.user.sessionId);
+
   res.clearCookie("access_token");
+  res.clearCookie("refresh_token");
   res.redirect("/login");
 };

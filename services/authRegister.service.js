@@ -83,7 +83,7 @@ const findSessionById = async (sessionId) => {
 };
 
 // findUserById
-const findUserById = async (userId) => {
+export const findUserById = async (userId) => {
   return prisma.users.findUnique({ where: { id: userId } });
 };
 
@@ -120,4 +120,10 @@ export const refreshTokens = async (refreshToken) => {
 // clearUserSession
 export const clearUserSession = async (sessionId) => {
   return prisma.sessions.delete({ where: { id: sessionId } });
+};
+
+// getAllShortLinks
+export const getAllShortLinks = async (id) => {
+  const data = await prisma.url_shortener.findMany({ where: { userId: id } });
+  return data;
 };

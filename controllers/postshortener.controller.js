@@ -87,7 +87,10 @@ export const postURLShortener = async (req, res) => {
 
     // if (getLinks[finalShortCode]) {
     if (existData) {
-      req.flash("errors", "Short Code already exists. Please choose another.");
+      return req.flash(
+        "errors",
+        "Short Code already exists. Please choose another."
+      );
     }
     // getLinks[finalShortCode] = url;
     // await saveData(getLinks);

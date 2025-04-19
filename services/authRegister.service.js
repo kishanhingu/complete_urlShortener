@@ -3,6 +3,7 @@ const prisma = new PrismaClient();
 // import bcrypt from "bcrypt";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 //*****? REGISTER PAGE *****//
 export const getUserByEmail = async (email) => {
@@ -56,10 +57,20 @@ export const createSession = async (userId, { ip, userAgent }) => {
 };
 
 // createAccessToken
-export const createAccessToken = ({ id, name, email, sessionId }) => {
-  return jwt.sign({ id, name, email, sessionId }, process.env.JWT_SECRET, {
-    expiresIn: "15min",
-  });
+export const createAccessToken = ({
+  id,
+  name,
+  email,
+  isEmailValid,
+  sessionId,
+}) => {
+  return jwt.sign(
+    { id, name, email, isEmailValid, sessionId },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "15min",
+    }
+  );
 };
 
 // createRefreshToken
@@ -105,6 +116,7 @@ export const refreshTokens = async (refreshToken) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      isEmailValid: user.isEmailValid,
       sessionId: currentSession.id,
     };
 
@@ -126,4 +138,39 @@ export const clearUserSession = async (sessionId) => {
 export const getAllShortLinks = async (id) => {
   const data = await prisma.url_shortener.findMany({ where: { userId: id } });
   return data;
+};
+
+// generateRandomToken
+export const generateRandomToken = (digit = 8) => {
+  const min = 10 ** (digit - 1);
+  const max = 10 ** digit;
+
+  return crypto.randomInt(min, max).toLocaleString();
+};
+
+// insertVerifyEmailToken
+export const insertVerifyEmailToken = async ({ userId, token }) => {
+  await prisma.is_email_valid.deleteMany({
+    where: {
+      expiresAt: {
+        lt: new Date(),
+      },
+    },
+  });
+
+  const expiresDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  return await prisma.is_email_valid.create({
+    data: {
+      userId,
+      token,
+      expiresAt: expiresDate,
+    },
+  });
+};
+
+// createVerifyLink
+export const createVerifyLink = async ({ email, token }) => {
+  const uriEncodedEmail = encodeURIComponent(email);
+  return `${process.env.FRONTEND_URL}/verify-email-token?token=${token}&email=${uriEncodedEmail}`;
 };

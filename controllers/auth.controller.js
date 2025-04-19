@@ -5,11 +5,14 @@ import {
   createSession,
   // comparePassword,
   createUser,
+  createVerifyLink,
   findUserById,
+  generateRandomToken,
   getAllShortLinks,
   // generateToken,
   getUserByEmail,
   hashPassword,
+  insertVerifyEmailToken,
   verifyPassword,
 } from "../services/authRegister.service.js";
 import {
@@ -62,6 +65,7 @@ export const postRegister = async (req, res) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    isEmailValid: false,
     sessionId: session.id,
   });
 
@@ -125,14 +129,15 @@ export const postLogin = async (req, res) => {
 
   //? sessions create
   const session = await createSession(user.id, {
-    ip: req.clientIp,
     userAgent: req.headers["user-agent"],
+    ip: req.clientIp,
   });
 
   const accessToken = createAccessToken({
     id: user.id,
     name: user.name,
     email: user.email,
+    isEmailValid: false,
     sessionId: session.id,
   });
 
@@ -185,8 +190,40 @@ export const getProfilePage = async (req, res) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      isEmailValid: user.isEmailValid,
       createdAt: user.createdAt,
       links: userShortLinks,
     },
   });
+};
+
+// getVerifyEmailPage
+export const getVerifyEmailPage = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  const user = await findUserById(req.user.id);
+
+  if (user.isEmailValid || !user) return res.redirect("/");
+
+  return res.render("auth/verify-email", { email: user.email });
+};
+
+// resendVerificationLink
+export const resendVerificationLink = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  const user = await findUserById(req.user.id);
+
+  if (user.isEmailValid || !user) return res.redirect("/");
+
+  const randomToken = generateRandomToken();
+  const token = randomToken.replace(/,/g, "");
+
+  await insertVerifyEmailToken({ userId: req.user.id, token });
+
+  const verifyEmailLink = await createVerifyLink({
+    email: user.email,
+    token,
+  });
+  console.log("VERIFY_EMAIL_LINK", verifyEmailLink);
 };

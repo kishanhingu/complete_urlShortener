@@ -145,32 +145,50 @@ export const generateRandomToken = (digit = 8) => {
   const min = 10 ** (digit - 1);
   const max = 10 ** digit;
 
-  return crypto.randomInt(min, max).toLocaleString();
+  return crypto.randomInt(min, max).toString();
 };
 
 // insertVerifyEmailToken
 export const insertVerifyEmailToken = async ({ userId, token }) => {
-  await prisma.is_email_valid.deleteMany({
-    where: {
-      expiresAt: {
-        lt: new Date(),
-      },
-    },
-  });
+  return prisma.$transaction(async (tx) => {
+    try {
+      await tx.is_email_valid.deleteMany({
+        where: {
+          expiresAt: {
+            lt: new Date(),
+          },
+        },
+      });
 
-  const expiresDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await tx.is_email_valid.deleteMany({
+        where: { userId },
+      });
 
-  return await prisma.is_email_valid.create({
-    data: {
-      userId,
-      token,
-      expiresAt: expiresDate,
-    },
+      const expiresDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      return await tx.is_email_valid.create({
+        data: {
+          userId,
+          token,
+          expiresAt: expiresDate,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to insert verification token:", error);
+      throw new Error("Unable to create verification token");
+    }
   });
 };
 
 // createVerifyLink
+// export const createVerifyLink = async ({ email, token }) => {
+//   const uriEncodedEmail = encodeURIComponent(email);
+//   return `${process.env.FRONTEND_URL}/verify-email-token?token=${token}&email=${uriEncodedEmail}`;
+// };
+
 export const createVerifyLink = async ({ email, token }) => {
-  const uriEncodedEmail = encodeURIComponent(email);
-  return `${process.env.FRONTEND_URL}/verify-email-token?token=${token}&email=${uriEncodedEmail}`;
+  const url = new URL(`${process.env.FRONTEND_URL}/verify-email-token`);
+  url.searchParams.append("token", token);
+  url.searchParams.append("email", email);
+
+  return url.toString();
 };

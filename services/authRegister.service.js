@@ -46,6 +46,8 @@ export const verifyPassword = async (hashedPassword, password) => {
 // };
 
 export const createSession = async (userId, { ip, userAgent }) => {
+  await prisma.sessions.deleteMany({ where: { userId } });
+
   const session = await prisma.sessions.create({
     data: {
       userId: userId,
@@ -191,4 +193,50 @@ export const createVerifyLink = async ({ email, token }) => {
   url.searchParams.append("email", email);
 
   return url.toString();
+};
+
+// findVerificationEmailToken
+export const findVerificationEmailToken = async ({ email, token }) => {
+  const tokenData = await prisma.is_email_valid.findMany({
+    where: {
+      token: token,
+      expiresAt: {
+        gte: new Date(),
+      },
+    },
+  });
+
+  if (!tokenData.length) return null;
+
+  const { userId } = tokenData[0];
+
+  const user = await prisma.users.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) return null;
+
+  return {
+    userId: user.id,
+    email: user.email,
+    // token: tokenData[0].token,
+    // expiresAt: tokenData[0].expiresAt,
+  };
+};
+
+// verifyUserEmailAndUpdate
+export const verifyUserEmailAndUpdate = async (email) => {
+  return prisma.users.update({
+    where: { email: email },
+    data: {
+      isEmailValid: true,
+    },
+  });
+};
+
+// clearVerifyEmailTokens
+export const clearVerifyEmailTokens = async (userId) => {
+  return await prisma.is_email_valid.deleteMany({ where: { userId } });
 };

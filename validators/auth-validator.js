@@ -33,3 +33,8 @@ export const registerUserSchema = z.object({
     .min(3, { message: "Password must be at least 3 characters long." })
     .max(100, { message: "Password must be no more than 100 characters." }),
 });
+
+export const verifyEmailSchema = z.object({
+  email: z.string().trim().email(),
+  token: z.string().trim().length(8),
+});

@@ -25,6 +25,11 @@ import {
   verifyEmailSchema,
 } from "../validators/auth-validator.js";
 
+import path from "path";
+import fs from "fs/promises";
+import ejs from "ejs";
+import mjml2html from "mjml";
+
 // REGISTER PAGE
 export const getRegisterPage = (req, res) => {
   if (req.user) return res.redirect("/");
@@ -231,12 +236,28 @@ export const resendVerificationLink = async (req, res) => {
   });
   console.log("VERIFY_EMAIL_LINK ➡️ ➡️ ➡️", verifyEmailLink);
 
+  // 1. read MJML file
+  const mjmlTemplatePath = path.join(
+    import.meta.dirname,
+    "..",
+    "emails",
+    "verify-email.mjml"
+  );
+  const readMjmlTemplateFile = await fs.readFile(mjmlTemplatePath, "utf-8");
+
+  // 2. to replace the placeholders with the actual values
+  const filledTemplate = ejs.render(readMjmlTemplateFile, {
+    code: randomToken,
+    link: verifyEmailLink,
+  });
+
+  // 3. convert MJML to HTML
+  const htmlOutput = mjml2html(filledTemplate).html;
+
   sendEmail({
     to: user.email,
     subject: "Verify your email",
-    html: `<h1>Click the link below to verify your email</h1>
-    <p>You can use this token: <code>${randomToken}</code></p>
-    <a href="${verifyEmailLink}">Verify Email</a>`,
+    html: htmlOutput,
   }).catch(console.error);
 
   res.redirect("/verify-email");

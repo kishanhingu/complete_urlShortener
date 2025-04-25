@@ -1,4 +1,4 @@
-import { sendEmail } from "../lib/nodemailer.js";
+// import { sendEmail } from "../lib/nodemailer.js";
 import {
   clearUserSession,
   clearVerifyEmailTokens,
@@ -29,6 +29,7 @@ import path from "path";
 import fs from "fs/promises";
 import ejs from "ejs";
 import mjml2html from "mjml";
+import { sendEmailWithResend } from "../lib/send_email.js";
 
 // REGISTER PAGE
 export const getRegisterPage = (req, res) => {
@@ -254,7 +255,13 @@ export const resendVerificationLink = async (req, res) => {
   // 3. convert MJML to HTML
   const htmlOutput = mjml2html(filledTemplate).html;
 
-  sendEmail({
+  // sendEmail({
+  //   to: user.email,
+  //   subject: "Verify your email",
+  //   html: htmlOutput,
+  // }).catch(console.error);
+
+  await sendEmailWithResend({
     to: user.email,
     subject: "Verify your email",
     html: htmlOutput,

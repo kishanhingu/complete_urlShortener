@@ -240,3 +240,8 @@ export const verifyUserEmailAndUpdate = async (email) => {
 export const clearVerifyEmailTokens = async (userId) => {
   return await prisma.is_email_valid.deleteMany({ where: { userId } });
 };
+
+// editUserProfile
+export const editUserProfile = async ({ id, name }) => {
+  return await prisma.users.update({ where: { id: id }, data: { name: name } });
+};

@@ -38,3 +38,11 @@ export const verifyEmailSchema = z.object({
   email: z.string().trim().email(),
   token: z.string().trim().length(8),
 });
+
+export const editUserSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(3, { message: "Name must be at least 3 characters long." })
+    .max(100, { message: "Name must be no more than 100 characters." }),
+});

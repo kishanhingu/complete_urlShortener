@@ -8,6 +8,7 @@ import {
   // comparePassword,
   createUser,
   createVerifyLink,
+  editUserProfile,
   findUserById,
   findVerificationEmailToken,
   generateRandomToken,
@@ -20,6 +21,7 @@ import {
   verifyUserEmailAndUpdate,
 } from "../services/authRegister.service.js";
 import {
+  editUserSchema,
   loginUserSchema,
   registerUserSchema,
   verifyEmailSchema,
@@ -288,6 +290,40 @@ export const verifyEmailToken = async (req, res) => {
   // 1: to find email - `is_email_valid` change value
 
   clearVerifyEmailTokens(token.userId).catch(console.error);
+
+  return res.redirect("/profile");
+};
+
+// getEditProfilePage
+export const getEditProfilePage = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  const user = await findUserById(req.user.id);
+  if (!user) return res.status(404).send("User not found");
+
+  return res.render("auth/edit-profile", {
+    name: user.name,
+    errors: req.flash("errors"),
+  });
+};
+
+// postEditProfilePage
+export const postEditProfile = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  const { data, error } = editUserSchema.safeParse(req.body);
+
+  if (error) {
+    req.flash("errors", error.errors[0].message);
+    return res.redirect("/edit-profile");
+  }
+
+  const updateData = await editUserProfile({
+    id: req.user.id,
+    name: data.name,
+  });
+
+  if (!updateData) return res.status(404).send("User not found");
 
   return res.redirect("/profile");
 };

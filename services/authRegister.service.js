@@ -245,3 +245,11 @@ export const clearVerifyEmailTokens = async (userId) => {
 export const editUserProfile = async ({ id, name }) => {
   return await prisma.users.update({ where: { id: id }, data: { name: name } });
 };
+
+// updateUserPassword
+export const updateUserPassword = async ({ userId, password }) => {
+  return await prisma.users.update({
+    where: { id: userId },
+    data: { password: password },
+  });
+};

@@ -17,6 +17,7 @@ import {
   getUserByEmail,
   hashPassword,
   insertVerifyEmailToken,
+  updateUserPassword,
   verifyPassword,
   verifyUserEmailAndUpdate,
 } from "../services/authRegister.service.js";
@@ -25,6 +26,7 @@ import {
   loginUserSchema,
   registerUserSchema,
   verifyEmailSchema,
+  verifyPasswordSchema,
 } from "../validators/auth-validator.js";
 
 import path from "path";
@@ -324,6 +326,50 @@ export const postEditProfile = async (req, res) => {
   });
 
   if (!updateData) return res.status(404).send("User not found");
+
+  return res.redirect("/profile");
+};
+
+// getChangePasswordPage
+export const getChangePasswordPage = (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  return res.render("auth/change-password", {
+    errors: req.flash("errors"),
+  });
+};
+
+// postChangePassword
+export const postChangePassword = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  const { data, error } = verifyPasswordSchema.safeParse(req.body);
+  if (error) {
+    const errorMessage = error.errors.map((err) => err.message);
+    req.flash("errors", errorMessage);
+    return res.redirect("/change-password");
+  }
+
+  const { currentPassword, newPassword, confirmPassword } = data;
+
+  const user = await findUserById(req.user.id);
+  if (!user) return res.status(404).send("User not found");
+
+  const isPasswordValid = await verifyPassword(user.password, currentPassword);
+  if (!isPasswordValid) {
+    req.flash("errors", "Current password that you entered is invalid.");
+    return res.redirect("/change-password");
+  }
+
+  const newHashedPassword = await hashPassword(confirmPassword);
+
+  const updatePassword = await updateUserPassword({
+    userId: user.id,
+    password: newHashedPassword,
+  });
+
+  if (!updatePassword)
+    return res.status(500).send("Password update failed. Please try again.");
 
   return res.redirect("/profile");
 };

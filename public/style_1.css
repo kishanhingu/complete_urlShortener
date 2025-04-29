@@ -19,9 +19,11 @@
 
   /* Shadows */
   --shadow-sm: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 0.4rem 0.6rem -0.1rem rgba(0, 0, 0, 0.1),
+  --shadow-md:
+    0 0.4rem 0.6rem -0.1rem rgba(0, 0, 0, 0.1),
     0 0.2rem 0.4rem -0.1rem rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 1rem 1.5rem -0.3rem rgba(0, 0, 0, 0.1),
+  --shadow-lg:
+    0 1rem 1.5rem -0.3rem rgba(0, 0, 0, 0.1),
     0 0.4rem 0.6rem -0.2rem rgba(0, 0, 0, 0.05);
 
   /* Spacing */
@@ -148,7 +150,7 @@ footer .social-links a:hover {
 
 /* index.ejs css */
 h1 {
-  color: #2e2e2e;
+  color: var(--accent);
 }
 
 .index-form {
@@ -184,9 +186,22 @@ button {
   color: #ffffff;
   cursor: pointer;
   flex: 0 0 auto;
-  font-family: "Inter var", ui-sans-serif, system-ui, -apple-system, system-ui,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family:
+    "Inter var",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    system-ui,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
   font-size: 1.4rem;
   font-weight: 600;
   line-height: 1.5rem;
@@ -783,7 +798,9 @@ li a:hover {
   padding: 0;
   overflow: hidden;
   margin-bottom: 2.5rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .profile-card:hover {

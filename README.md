@@ -1,60 +1,64 @@
-# URL Shortener - A Modern Web Application
+# 🔗 URL Shortener – Secure Full-Stack Web Application
 
-A feature-rich URL shortening service built with modern web technologies, offering secure authentication, dual database support, and real-time analytics.
+A feature-rich and secure URL Shortener built using Node.js, Express.js, Prisma ORM with MySQL, and more. It includes user authentication, form validation, email notifications, and server-side rendering using EJS.
 
-## ✨ Features
+---
 
-- **URL Shortening**: Convert long URLs into short, memorable links
-- **Analytics Tracking**: Monitor click-through rates and access times
-- **User Authentication**: JWT-based security with cookie sessions
-- **Dual Database Support**: MongoDB + MySQL integration via Prisma ORM
-- **Secure Hashing**: Argon2 password encryption for enhanced security
-- **Template Rendering**: Dynamic views using EJS templating engine
-- **RESTful API**: Endpoints for programmatic URL management
+## 🚀 Features
 
-## 🛠️ Technologies Used
+- 🔐 **User Authentication** with password hashing using **Argon2**
+- 🧾 **Form Validation** with **Zod**
+- 🛡️ **Secure Session Management** using **express-session**, **cookie-parser**, and **connect-flash**
+- ✉️ **Email Notifications** using **Nodemailer** with responsive MJML templates
+- 🔗 **URL Shortening** with unique code generation and redirection
+- 🗃️ **MySQL** database management with **Prisma ORM**
+- 📄 **EJS** templating for server-side rendering
+- 🔑 **JWT-based Authorization**
 
-- **Backend**: Express.js
-- **Databases**: MongoDB (NoSQL) + MySQL (Relational)
-- **ORM**: Prisma for unified database access
-- **Security**: JWT, Argon2, cookie-parser
-- **Templating**: EJS for server-side rendering
-- **Validation**: Zod (optional - add if used)
-- **Testing**: (Add your testing framework)
+---
 
-## 🚀 Getting Started
+## 🧑‍💻 Tech Stack
+
+| Technology          | Description                            |
+| ------------------- | -------------------------------------- |
+| **Node.js**         | Runtime environment for server-side JS |
+| **Express.js**      | Backend web framework                  |
+| **Prisma ORM**      | Type-safe database client for MySQL    |
+| **MySQL**           | Relational database                    |
+| **EJS**             | Templating engine                      |
+| **Zod**             | Schema-based form validation           |
+| **Argon2**          | Secure password hashing                |
+| **jsonwebtoken**    | User authentication using tokens       |
+| **express-session** | Manage user sessions                   |
+| **cookie-parser**   | Parse cookies in Express               |
+| **connect-flash**   | Flash messages for form feedback       |
+| **Nodemailer**      | Send emails                            |
+| **MJML**            | Responsive email templates             |
+
+---
+
+## 📦 Installation
 
 ### Prerequisites
 
-- Node.js v16+
-- npm/yarn
-- MongoDB Atlas/local instance
-- MySQL server
+- Node.js >= 18.x
+- MySQL installed and running
+- `.env` file with necessary environment variables & I will shared .env.example file
 
-### Installation
+### Steps
 
-1.  Clone the repository:
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/url-shortener.git
+cd url-shortener
 
-    ```bash
-    git clone https://github.com/yourusername/urlShortener.git
-    cd urlShortener
-    ```
+# Install dependencies
+npm install
 
-2.  Install dependencies:
+# Set up Prisma (after configuring your .env)
+npx prisma generate
+npx prisma migrate dev
 
-    `npm install`
-
-3.  Configure environment variables (create .env file):
-
-    `I shared .env.example file`
-
-4.  Initialize databases with Prisma:
-
-    ```
-    npx prisma generate
-    npx prisma migrate dev
-    ```
-
-5.  Start the server:
-
-    `npm start`
+# Start the development server
+npm run dev
+```

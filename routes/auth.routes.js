@@ -38,6 +38,16 @@ router
   .get(authControllers.getChangePasswordPage)
   .post(authControllers.postChangePassword);
 
+router
+  .route("/forgot-password")
+  .get(authControllers.getResetPasswordPage)
+  .post(authControllers.postForgotPassword);
+
+router
+  .route("/forgot-password/:token")
+  .get(authControllers.getForgotPasswordTokenPage)
+  .post(authControllers.postResetPasswordToken);
+
 router.route("/logout").get(authControllers.userLogout);
 
 export const authRoutes = router;

@@ -1,18 +1,22 @@
 // import { sendEmail } from "../lib/nodemailer.js";
 import {
+  clearResetPasswordToken,
   clearUserSession,
   clearVerifyEmailTokens,
   createAccessToken,
   createRefreshToken,
+  createResetPasswordLink,
   createSession,
   // comparePassword,
   createUser,
   createVerifyLink,
   editUserProfile,
+  findUserByEmail,
   findUserById,
   findVerificationEmailToken,
   generateRandomToken,
   getAllShortLinks,
+  getResetPasswordToken,
   // generateToken,
   getUserByEmail,
   hashPassword,
@@ -23,6 +27,8 @@ import {
 } from "../services/authRegister.service.js";
 import {
   editUserSchema,
+  forgotPasswordEmailSchema,
+  forgotPasswordSchema,
   loginUserSchema,
   registerUserSchema,
   verifyEmailSchema,
@@ -34,6 +40,7 @@ import fs from "fs/promises";
 import ejs from "ejs";
 import mjml2html from "mjml";
 import { sendEmailWithResend } from "../lib/send_email.js";
+import { getHtmlFromMjmlTemplate } from "../lib/get-Html-From-Mjml-Template.js";
 
 // REGISTER PAGE
 export const getRegisterPage = (req, res) => {
@@ -372,4 +379,81 @@ export const postChangePassword = async (req, res) => {
     return res.status(500).send("Password update failed. Please try again.");
 
   return res.redirect("/profile");
+};
+
+// getResetPasswordPage
+export const getResetPasswordPage = async (req, res) => {
+  return res.render("auth/forgot-password", {
+    formSubmitted: req.flash("formSubmitted")[0],
+    errors: req.flash("errors"),
+  });
+};
+
+// postForgotPassword
+export const postForgotPassword = async (req, res) => {
+  const { data, error } = forgotPasswordEmailSchema.safeParse(req.body);
+
+  if (error) {
+    req.flash("errors", error.errors[0].message);
+    return res.redirect("/forgot-password");
+  }
+
+  const user = await findUserByEmail(data.email);
+  if (!user) return res.status(404).send("User not found");
+
+  const resetPasswordLink = await createResetPasswordLink({ userId: user.id });
+
+  const html = await getHtmlFromMjmlTemplate("forgot-password-email", {
+    name: user.name,
+    link: resetPasswordLink,
+  });
+
+  sendEmailWithResend({ to: user.email, subject: "Reset Your Password", html });
+
+  req.flash("formSubmitted", true);
+  res.redirect("/forgot-password");
+};
+
+// getForgotPasswordTokenPage
+export const getForgotPasswordTokenPage = async (req, res) => {
+  const { token } = req.params;
+  const [passwordResetData] = await getResetPasswordToken(token);
+
+  if (!passwordResetData) return res.render("auth/wrong-reset-password-token");
+
+  return res.render("auth/set-forgot-password", {
+    formSubmitted: req.flash("formSubmitted")[0],
+    errors: req.flash("errors"),
+    token,
+  });
+};
+
+// postResetPasswordToken
+export const postResetPasswordToken = async (req, res) => {
+  const { token } = req.params;
+  const [passwordResetData] = await getResetPasswordToken(token);
+
+  if (!passwordResetData) {
+    req.flash("errors", "Password Token is not matching");
+    return res.render("auth/wrong-reset-password-token");
+  }
+
+  const { data, error } = forgotPasswordSchema.safeParse(req.body);
+  if (error) {
+    const errorMessage = error.errors.map((err) => err.message);
+    req.flash("errors", errorMessage);
+    return res.redirect(`/forgot-password/${token}`);
+  }
+
+  const { confirmPassword } = data;
+
+  const user = await findUserById(passwordResetData.userId);
+  if (!user) return res.status(404).send("User not found");
+
+  await clearResetPasswordToken();
+
+  const hashedPassword = await hashPassword(confirmPassword);
+  await updateUserPassword({ userId: user.id, password: hashedPassword });
+
+  return res.redirect("/login");
 };

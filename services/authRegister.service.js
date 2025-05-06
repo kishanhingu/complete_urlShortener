@@ -253,3 +253,43 @@ export const updateUserPassword = async ({ userId, password }) => {
     data: { password: password },
   });
 };
+
+// findUserByEmail
+export const findUserByEmail = async (email) => {
+  return await prisma.users.findUnique({ where: { email } });
+};
+
+// createResetPasswordLink
+export const createResetPasswordLink = async ({ userId }) => {
+  const token = crypto.randomBytes(32).toString("hex");
+  const hashToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  // delete
+  await prisma.password_reset_tokens.deleteMany({ where: { userId } });
+
+  // add token to database
+  const expiresTime = new Date(Date.now() + 60 * 60 * 1000);
+  await prisma.password_reset_tokens.create({
+    data: { userId, tokenHash: hashToken, expiresAt: expiresTime },
+  });
+
+  return `${process.env.FRONTEND_URL}/forgot-password/${token}`;
+};
+
+// getResetPasswordToken
+export const getResetPasswordToken = async (token) => {
+  const hashToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  return await prisma.password_reset_tokens.findMany({
+    where: {
+      tokenHash: hashToken,
+      expiresAt: {
+        gte: new Date(),
+      },
+    },
+  });
+};
+
+export const clearResetPasswordToken = async (userId) => {
+  return await prisma.password_reset_tokens.deleteMany({ where: { userId } });
+};

@@ -52,11 +52,25 @@ model password_reset_tokens {
   createdAt DateTime @default(now()) @map("created_at")
 }
 
+enum Provider {
+  google
+  github
+}
+
+model oauth_accounts {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @map("user_id")
+  user              users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          Provider
+  providerAccountId String   @unique @map("provider_account_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+}
+
 model users {
   id                    Int                     @id @default(autoincrement())
   name                  String?
   email                 String                  @unique
-  password              String
+  password              String?                 @db.VarChar(255)
   isEmailValid          Boolean                 @default(false) @map("is_email_valid")
   createdAt             DateTime                @default(now()) @map("created_at")
   updatedAt             DateTime                @updatedAt @map("updated_at")
@@ -64,4 +78,5 @@ model users {
   sessions              sessions[]
   is_email_valid        is_email_valid[]
   password_reset_tokens password_reset_tokens[]
+  oauth_accounts        oauth_accounts[]
 }

@@ -293,3 +293,78 @@ export const getResetPasswordToken = async (token) => {
 export const clearResetPasswordToken = async (userId) => {
   return await prisma.password_reset_tokens.deleteMany({ where: { userId } });
 };
+
+export const getUserWithOauthId = async ({ provider, email }) => {
+  const [user] = await prisma.users.findMany({
+    where: {
+      email: email,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isEmailValid: true,
+      oauth_accounts: {
+        where: {
+          provider: provider,
+        },
+        select: {
+          provider: true,
+          providerAccountId: true,
+        },
+      },
+    },
+  });
+
+  return user;
+};
+
+export const linkUserWithOauth = async ({
+  userId,
+  provider,
+  providerAccountId,
+}) => {
+  return await prisma.oauth_accounts.create({
+    data: {
+      userId,
+      provider,
+      providerAccountId,
+    },
+  });
+};
+
+export const createUserWithOauth = async ({
+  name,
+  email,
+  provider,
+  providerAccountId,
+}) => {
+  const data = await prisma.$transaction(async (trx) => {
+    const user = await trx.users.create({
+      data: {
+        name,
+        email,
+        isEmailValid: true,
+      },
+    });
+
+    const o_auth_data = await trx.oauth_accounts.create({
+      data: {
+        userId: user.id,
+        provider,
+        providerAccountId,
+      },
+    });
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      isEmailValid: user.isEmailValid,
+      provider: o_auth_data.provider,
+      providerAccountId: o_auth_data.providerAccountId,
+    };
+  });
+
+  return data;
+};

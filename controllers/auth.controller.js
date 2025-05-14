@@ -9,6 +9,7 @@ import {
   createSession,
   // comparePassword,
   createUser,
+  createUserWithOauth,
   createVerifyLink,
   editUserProfile,
   findUserByEmail,
@@ -19,8 +20,10 @@ import {
   getResetPasswordToken,
   // generateToken,
   getUserByEmail,
+  getUserWithOauthId,
   hashPassword,
   insertVerifyEmailToken,
+  linkUserWithOauth,
   updateUserPassword,
   verifyPassword,
   verifyUserEmailAndUpdate,
@@ -41,6 +44,8 @@ import ejs from "ejs";
 import mjml2html from "mjml";
 import { sendEmailWithResend } from "../lib/send_email.js";
 import { getHtmlFromMjmlTemplate } from "../lib/get-Html-From-Mjml-Template.js";
+import { decodeIdToken, generateCodeVerifier, generateState } from "arctic";
+import { google } from "../lib/Oauth/google.js";
 
 // REGISTER PAGE
 export const getRegisterPage = (req, res) => {
@@ -130,6 +135,14 @@ export const postLogin = async (req, res) => {
   const user = await getUserByEmail(email);
   if (!user) {
     req.flash("errors", "Invalid email or password");
+    return res.redirect("/login");
+  }
+
+  if (!user.password) {
+    req.flash(
+      "errors",
+      "You have created account using social login. Please login with your social account."
+    );
     return res.redirect("/login");
   }
 
@@ -456,4 +469,130 @@ export const postResetPasswordToken = async (req, res) => {
   await updateUserPassword({ userId: user.id, password: hashedPassword });
 
   return res.redirect("/login");
+};
+
+// getGoogleLoginPage
+export const getGoogleLoginPage = async (req, res) => {
+  if (req.user) return res.redirect("/");
+
+  const state = generateState();
+  const codeVerifier = generateCodeVerifier();
+  const url = google.createAuthorizationURL(state, codeVerifier, [
+    "openid", //this os called scopes, here we are giving openid, and profile
+    "profile", //openid gives tokens if needed, and profile gives user information
+    // we are telling people google about the information that we require from user.
+    "email",
+  ]);
+
+  const cookieConfig = {
+    httpOnly: true,
+    secure: true,
+    maxAge: 60 * 10 * 1000,
+    sameSite: "lax", // this is such that when google redirects to our website, cookies are maintained
+  };
+
+  res.cookie("google_oauth_state", state, cookieConfig);
+  res.cookie("google_code_verifier", codeVerifier, cookieConfig);
+
+  res.redirect(url.toString());
+};
+
+// getGoogleLoginCallback
+export const getGoogleLoginCallback = async (req, res) => {
+  // google redirect with code, and state in query params
+  // we will use code to find out the user.
+
+  const { code, state } = req.query;
+  // console.log({ code, state });
+
+  const {
+    google_oauth_state: storedState,
+    google_code_verifier: codeVerifier,
+  } = req.cookies;
+  // console.log({ storedState, codeVerifier });
+
+  if (
+    !code ||
+    !state ||
+    !storedState ||
+    !codeVerifier ||
+    state !== storedState
+  ) {
+    req.flash(
+      "errors",
+      "Couldn't login with Google because of invalid login attempt Please try again!"
+    );
+
+    return res.redirect("/login");
+  }
+
+  let token;
+  try {
+    token = await google.validateAuthorizationCode(code, codeVerifier);
+  } catch {
+    req.flash(
+      "errors",
+      "Couldn't login with Google because of invalid login attempt Please try again!"
+    );
+    return res.redirect("/login");
+  }
+
+  // console.log("TOKEN GOOGLE:", token);
+
+  const claims = decodeIdToken(token.idToken());
+  const { sub: googleUserId, name, email } = claims;
+
+  let user = await getUserWithOauthId({
+    provider: "google",
+    email,
+  });
+
+  // if user exists but user is not linked with oauth
+  if (user && !user.oauth_accounts[0].providerAccountId) {
+    await linkUserWithOauth({
+      userId: user.id,
+      provider: "google",
+      providerAccountId: googleUserId,
+    });
+  }
+
+  // if user doesn't exist
+  if (!user) {
+    user = await createUserWithOauth({
+      name,
+      email,
+      provider: "google",
+      providerAccountId: googleUserId,
+    });
+  }
+
+  // create session
+  const session = await createSession(user.id, {
+    ip: req.clientIp,
+    userAgent: req.headers["user-agent"],
+  });
+
+  const accessToken = createAccessToken({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    isEmailValid: false,
+    sessionId: session.id,
+  });
+
+  const refreshToken = createRefreshToken(session.id);
+
+  const baseConfig = { httpOnly: true, secure: true };
+
+  res.cookie("access_token", accessToken, {
+    ...baseConfig,
+    maxAge: 15 * 60 * 1000,
+  });
+
+  res.cookie("refresh_token", refreshToken, {
+    ...baseConfig,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  return res.redirect("/");
 };

@@ -324,6 +324,15 @@ export const linkUserWithOauth = async ({
   provider,
   providerAccountId,
 }) => {
+  await prisma.users.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      isEmailValid: true,
+    },
+  });
+
   return await prisma.oauth_accounts.create({
     data: {
       userId,

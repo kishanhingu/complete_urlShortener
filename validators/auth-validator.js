@@ -103,3 +103,24 @@ export const forgotPasswordSchema = z
     message: "Password don't match.",
     path: ["confirmPassword"],
   });
+
+export const setPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters long." })
+      .max(100, { message: "Password must be no more than 100 characters." }),
+
+    confirmPassword: z
+      .string()
+      .min(6, {
+        message: "Confirm password must be at least 6 characters long.",
+      })
+      .max(100, {
+        message: "Confirm password must be no more than 100 characters.",
+      }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password don't match.",
+    path: ["confirmPassword"],
+  });

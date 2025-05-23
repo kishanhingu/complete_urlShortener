@@ -34,6 +34,7 @@ import {
   forgotPasswordSchema,
   loginUserSchema,
   registerUserSchema,
+  setPasswordSchema,
   verifyEmailSchema,
   verifyPasswordSchema,
 } from "../validators/auth-validator.js";
@@ -226,6 +227,7 @@ export const getProfilePage = async (req, res) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      password: Boolean(user.password),
       isEmailValid: user.isEmailValid,
       createdAt: user.createdAt,
       links: userShortLinks,
@@ -716,4 +718,44 @@ export const getGithubLoginCallback = async (req, res) => {
   });
 
   return res.redirect("/");
+};
+
+// getSetPasswordPage
+export const getSetPasswordPage = async (req, res) => {
+  if (!req.user) return res.redirect("/");
+
+  return res.render("auth/set-password", { errors: req.flash("errors") });
+};
+
+// postSetPassword
+export const postSetPassword = async (req, res) => {
+  if (!req.user) return res.redirect("/login");
+
+  const { data, error } = setPasswordSchema.safeParse(req.body);
+
+  if (error) {
+    const errorMessage = error.errors.map((err) => err.message);
+    req.flash("errors", errorMessage);
+    return res.redirect("/set-password");
+  }
+
+  const { confirmPassword } = data;
+
+  const user = await findUserByEmail(req.user.email);
+  if (user.password) {
+    req.flash(
+      "errors",
+      "You already have your password, Instead Change your password"
+    );
+    return res.redirect("/set-password");
+  }
+
+  const password = await hashPassword(confirmPassword);
+
+  await updateUserPassword({
+    userId: user.id,
+    password,
+  });
+
+  return res.redirect("/profile");
 };

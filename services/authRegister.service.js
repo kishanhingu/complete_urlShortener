@@ -294,7 +294,7 @@ export const clearResetPasswordToken = async (userId) => {
   return await prisma.password_reset_tokens.deleteMany({ where: { userId } });
 };
 
-export const getUserWithOauthId = async ({ provider, email }) => {
+export const getUserWithOauthId = async ({ provider, email, avatarUrl }) => {
   const [user] = await prisma.users.findMany({
     where: {
       email: email,
@@ -303,6 +303,7 @@ export const getUserWithOauthId = async ({ provider, email }) => {
       id: true,
       name: true,
       email: true,
+      avatarUrl: true,
       isEmailValid: true,
       oauth_accounts: {
         where: {
@@ -316,6 +317,15 @@ export const getUserWithOauthId = async ({ provider, email }) => {
     },
   });
 
+  await prisma.users.update({
+    where: {
+      email: email,
+    },
+    data: {
+      avatarUrl: avatarUrl,
+    },
+  });
+
   return user;
 };
 
@@ -323,6 +333,7 @@ export const linkUserWithOauth = async ({
   userId,
   provider,
   providerAccountId,
+  avatarUrl,
 }) => {
   await prisma.users.update({
     where: {
@@ -332,6 +343,18 @@ export const linkUserWithOauth = async ({
       isEmailValid: true,
     },
   });
+
+  if (avatarUrl) {
+    await prisma.users.update({
+      where: {
+        id: userId,
+        // avatarUrl: null,
+      },
+      data: {
+        avatarUrl: avatarUrl,
+      },
+    });
+  }
 
   return await prisma.oauth_accounts.create({
     data: {
@@ -347,6 +370,7 @@ export const createUserWithOauth = async ({
   email,
   provider,
   providerAccountId,
+  avatarUrl,
 }) => {
   const data = await prisma.$transaction(async (trx) => {
     const user = await trx.users.create({
@@ -354,6 +378,7 @@ export const createUserWithOauth = async ({
         name,
         email,
         isEmailValid: true,
+        avatarUrl,
       },
     });
 

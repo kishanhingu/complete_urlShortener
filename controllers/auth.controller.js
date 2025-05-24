@@ -228,6 +228,7 @@ export const getProfilePage = async (req, res) => {
       name: user.name,
       email: user.email,
       password: Boolean(user.password),
+      avatarUrl: user.avatarUrl,
       isEmailValid: user.isEmailValid,
       createdAt: user.createdAt,
       links: userShortLinks,
@@ -540,14 +541,13 @@ export const getGoogleLoginCallback = async (req, res) => {
     return res.redirect("/login");
   }
 
-  // console.log("TOKEN GOOGLE:", token);
-
   const claims = decodeIdToken(token.idToken());
-  const { sub: googleUserId, name, email } = claims;
+  const { sub: googleUserId, name, email, picture } = claims;
 
   let user = await getUserWithOauthId({
     provider: "google",
     email,
+    avatarUrl: picture,
   });
 
   // if user exists but user is not linked with oauth
@@ -556,6 +556,7 @@ export const getGoogleLoginCallback = async (req, res) => {
       userId: user.id,
       provider: "google",
       providerAccountId: googleUserId,
+      avatarUrl: picture,
     });
   }
 
@@ -566,6 +567,7 @@ export const getGoogleLoginCallback = async (req, res) => {
       email,
       provider: "google",
       providerAccountId: googleUserId,
+      avatarUrl: picture,
     });
   }
 
@@ -651,7 +653,7 @@ export const getGithubLoginCallback = async (req, res) => {
 
   if (!githubUserResponse.ok) return handleFailedLogin();
   const githubUser = await githubUserResponse.json();
-  const { id: githubUserId, name } = githubUser;
+  const { id: githubUserId, name, avatar_url } = githubUser;
 
   const githubEmailResponse = await fetch(
     "https://api.github.com/user/emails",
@@ -670,6 +672,7 @@ export const getGithubLoginCallback = async (req, res) => {
   let user = await getUserWithOauthId({
     provider: "github",
     email,
+    avatarUrl: avatar_url,
   });
 
   if (user && user.oauth_accounts.length === 0) {
@@ -677,6 +680,7 @@ export const getGithubLoginCallback = async (req, res) => {
       userId: user.id,
       provider: "github",
       providerAccountId: githubUserId.toString(),
+      avatarUrl: avatar_url,
     });
   }
 
@@ -686,6 +690,7 @@ export const getGithubLoginCallback = async (req, res) => {
       email,
       provider: "github",
       providerAccountId: githubUserId.toString(),
+      avatarUrl: avatar_url,
     });
   }
 

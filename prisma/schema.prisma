@@ -16,7 +16,7 @@ datasource db {
 model url_shortener {
   id        Int      @id @default(autoincrement())
   url       String
-  shortCode String   @unique
+  shortCode String   @unique @map("short_code")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   userId    Int      @map("user_id") // Foreign key field

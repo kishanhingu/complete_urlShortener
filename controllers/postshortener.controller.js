@@ -7,7 +7,10 @@ import {
   saveData,
   updateShortCode,
 } from "../services/shortener.service.js";
-import { shortenerSchema } from "../validators/shortener-validator.js";
+import {
+  shortenerSchema,
+  shortenerSearchParamsSchema,
+} from "../validators/shortener-validator.js";
 // import { URL } from "../schema/url_schema.js";
 import z from "zod";
 
@@ -35,7 +38,17 @@ export const getShortenerPage = async (req, res) => {
 
     if (!req.user) return res.redirect("/login");
 
-    const links = await getData(req.user.id);
+    const searchParams = shortenerSearchParamsSchema.parse(req.query);
+
+    // const links = await getData(req.user.id);
+    //? for pagination use
+    const { shortLink, totalCount } = await getData({
+      userId: req.user.id,
+      limit: 10,
+      offset: (searchParams.page - 1) * 10,
+    });
+
+    const totalPages = Math.ceil(totalCount / 10);
 
     // let isLoggedIn = req.headers.cookie;
     // isLoggedIn = Boolean(
@@ -47,8 +60,10 @@ export const getShortenerPage = async (req, res) => {
     // return res.render("index", { links, host: req.host, access_token });
 
     return res.render("index", {
-      links,
+      links: shortLink,
       host: req.host,
+      currentPage: searchParams.page,
+      totalPages: totalPages,
       errors: req.flash("errors"),
     });
   } catch (error) {

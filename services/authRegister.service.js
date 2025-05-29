@@ -317,14 +317,16 @@ export const getUserWithOauthId = async ({ provider, email, avatarUrl }) => {
     },
   });
 
-  await prisma.users.update({
-    where: {
-      email: email,
-    },
-    data: {
-      avatarUrl: avatarUrl,
-    },
-  });
+  if (user) {
+    await prisma.users.update({
+      where: {
+        email: email,
+      },
+      data: {
+        avatarUrl: avatarUrl,
+      },
+    });
+  }
 
   return user;
 };

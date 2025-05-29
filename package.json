@@ -8,7 +8,8 @@
     "db:migrate": "npx prisma migrate dev --name init",
     "db:generate": "npx prisma generate",
     "db:studio": "npx prisma studio",
-    "db:reset": "npx prisma db push --force-reset"
+    "db:reset": "npx prisma db push --force-reset",
+    "db:seed": "node --env-file=.env prisma/seed.js"
   },
   "keywords": [],
   "author": "Kishan Hingu",
@@ -16,6 +17,7 @@
   "type": "module",
   "description": "",
   "dependencies": {
+    "@faker-js/faker": "^9.8.0",
     "@prisma/client": "^6.8.2",
     "arctic": "^3.6.1",
     "argon2": "^0.41.1",

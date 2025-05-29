@@ -1,11 +1,21 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-export const getData = async (id) => {
-  const allShortLinks = await prisma.url_shortener.findMany({
-    where: { userId: id },
+export const getData = async ({ userId, limit, offset }) => {
+  const shortLink = await prisma.url_shortener.findMany({
+    where: { userId: userId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    skip: offset,
   });
-  return allShortLinks;
+
+  const totalCount = await prisma.url_shortener.count({
+    where: {
+      userId: userId,
+    },
+  });
+
+  return { shortLink, totalCount };
 };
 
 export const saveData = async ({ url, shortCode, userId }) => {

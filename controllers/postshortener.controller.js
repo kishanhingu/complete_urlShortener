@@ -50,6 +50,11 @@ export const getShortenerPage = async (req, res) => {
 
     const totalPages = Math.ceil(totalCount / 10);
 
+    if (totalPages < searchParams.page) {
+      req.flash("errors", "No Page found");
+      return res.redirect("/");
+    }
+
     // let isLoggedIn = req.headers.cookie;
     // isLoggedIn = Boolean(
     //   isLoggedIn?.split("=")?.find((cookie) => cookie.trim().startsWith("true"))
@@ -104,10 +109,8 @@ export const postURLShortener = async (req, res) => {
 
     // if (getLinks[finalShortCode]) {
     if (existData) {
-      return req.flash(
-        "errors",
-        "Short Code already exists. Please choose another."
-      );
+      req.flash("errors", "Short Code already exists. Please choose another.");
+      return res.redirect("/");
     }
     // getLinks[finalShortCode] = url;
     // await saveData(getLinks);

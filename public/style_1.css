@@ -1239,5 +1239,8 @@ footer .social-links a:hover {
 
 #avatar-preview-img {
   width: 15rem;
-  height: 12rem;
+  height: 15rem;
+  border-radius: 50%;
+  /* border: #7a7a7a solid 0.2rem; */
+  box-shadow: 0rem 0rem 4rem 0.5rem rgba(75, 75, 75, 0.3);
 }

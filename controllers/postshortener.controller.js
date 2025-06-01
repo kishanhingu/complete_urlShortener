@@ -97,8 +97,10 @@ export const postURLShortener = async (req, res) => {
     // const existData = getLinks.some((data) => data.shortCode === shortCode);
 
     //! Prisma Using MySQL
-    const getLinks = await getData(req.user.id);
-    const existData = getLinks.some((data) => data.shortCode === shortCode);
+    const getLinks = await getData({ userId: req.user.id });
+    const existData = getLinks.shortLink.some(
+      (data) => data.shortCode === shortCode
+    );
 
     // if (getLinks[finalShortCode]) {
     if (existData) {
